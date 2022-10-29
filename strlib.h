@@ -1,29 +1,26 @@
 // requires libraries: stdio.h, stdlib.h, string.h, stdbool.h
-#define version_of "0.1.0"
-#define contains_substr(a, b) (count_substr(a, b) != 0)
-#define ends_with(a, b) starts_with(reverse_str(a), reverse_str(b))
-#define equals_str(a, b) (strcmp(a, b) == 0)
-#define slice_from(str, a) slice_fromto(str, a, strlen(str))
-#define slice_to(str, a) slice_fromto(str, 0, a)
+#define version_of "0.1.1"
+#define nullstr(a) char *a = NULL
 // Structure that makes working with string arrays easier
 typedef struct {
 	char **array;
 	int length;
 } StringArray;
 // Sets the string value
-void set_str(char**str, char *a) {
-	*str = malloc((strlen(a))*sizeof(char));
+void set_str(char **str, char *a) {
+	if (*str != NULL) free(*str);
+	*str = malloc(strlen(a) * sizeof(char));
 	strcpy(*str, a);
 }
 // Concatenates strings
-void add_str(char **str, char*a) {
-	*str=realloc(*str,(strlen(*str)+strlen(a))*sizeof(char));
+void add_str(char **str, char *a) {
+	*str = realloc(*str, (strlen(*str) + strlen(a)) * sizeof(char));
 	strcat(*str, a);
 }
 // Counts substrings in the string
 int count_substr(char *a, char *b) {
 	int result = 0, index = 0;
-	for (int i=0;i<strlen(a);i++) {
+	for (int i = 0; i < strlen(a); i++) {
 		while (a[i] == b[index]) {
 			index++;
 			i++;
@@ -32,6 +29,10 @@ int count_substr(char *a, char *b) {
 		index = 0;
 	}
 	return result;
+}
+
+bool contains_substr(char *a, char *b) {
+	return strstr(a, b) != 0;
 }
 
 bool starts_with(char *a, char *b) {
@@ -54,18 +55,31 @@ char *slice_fromto(char *str, int a, int b) {
 	}
 	return result;
 }
+
+char *slice_from(char *str, int a) {
+	return slice_fromto(str, a, strlen(str));
+}
+
+char *slice_to(char *str, int a) {
+	return slice_fromto(str, 0, a);
+}
 // string reverse
 char *reverse_str(char *a) {
-	char *result = NULL;
+	nullstr(result);
 	set_str(&result, a);
 	for (long i = strlen(a) - 1; i > -1; i--) result[strlen(a) - i - 1] = a[i];
 	return result;
 }
+
+bool ends_with(char *a, char *b) {
+	return starts_with(reverse_str(a), reverse_str(b));
+}
+
 // split the string `a` by the substring `b`
 StringArray split(char*str, char*b) {
 	StringArray res;
 	char** result;
-	char *a = NULL;
+	nullstr(a);
 	if (!starts_with(str, b) && !ends_with(str, b))
 		set_str(&a, str);
 	else if (starts_with(str, b) && ends_with(str, b))
@@ -76,8 +90,9 @@ StringArray split(char*str, char*b) {
 		set_str(&a, slice_to(str, strlen(str) - strlen(b)));
 	if (!contains_substr(a, b)) {
 		result = malloc(sizeof(char*));
-		result[0] = malloc(strlen(a)*sizeof(char));
-		strcpy(result[0], a);
+		set_str(&result[0], a);
+		/* result[0] = malloc(strlen(a)*sizeof(char)); */
+		/* strcpy(result[0], a); */
 		res.array = result;
 		res.length = 1;
 	} else {
@@ -135,23 +150,23 @@ char *join_str(StringArray array, char* sep) {
 }
 
 char *replace(char *str, char *a, char *b) {
-	char *result = NULL;
+	nullstr(result);
 	if (contains_substr(str, a)) {
 		if (!starts_with(str, a) && !ends_with(str, a)) {
 			set_str(&result, join_str(split(str, a), b));
 		} else if (starts_with(str, a) && ends_with(str, a)) {
-			char *midr;
+			nullstr(midr);
 			set_str(&midr, slice_fromto(str, strlen(a), strlen(str) - strlen(a)));
 			set_str(&result, b);
 			add_str(&result, join_str(split(midr, a), b));
 			add_str(&result, b);
 		} else if (starts_with(str, a)) {
-			char *midr;
+			nullstr(midr);
 			set_str(&midr, slice_from(str, strlen(a)));
 			set_str(&result, b);
 			add_str(&result, join_str(split(midr, a), b));
 		} else if (ends_with(str, a)) {
-			char *midr;
+			nullstr(midr);
 			set_str(&midr, slice_to(str, strlen(str)-strlen(a)));
 			set_str(&result, join_str(split(midr, a), b));
 			add_str(&result, b);
@@ -164,7 +179,7 @@ char *replace(char *str, char *a, char *b) {
 
 char *strip(char *str, char a) {
 	int start = 0, end = strlen(str);
-	while (str[start] == a && start<strlen(str))
+	while (str[start] == a && start < strlen(str))
 		start++;
 	while (str[end - 1] == a && end > 0)
 		end--;
