@@ -1,14 +1,17 @@
 // requires libraries: stdio.h, stdlib.h, string.h, stdbool.h
-#define version_of "0.1.1"
+#define version_of "0.2.0"
 #define nullstr(a) char *a = NULL
 // Structure that makes working with string arrays easier
 typedef struct {
 	char **array;
 	int length;
 } StringArray;
+
+// String functions
 // Sets the string value
 void set_str(char **str, char *a) {
 	if (*str != NULL) free(*str);
+	*str = NULL;
 	*str = malloc(strlen(a) * sizeof(char));
 	strcpy(*str, a);
 }
@@ -16,6 +19,29 @@ void set_str(char **str, char *a) {
 void add_str(char **str, char *a) {
 	*str = realloc(*str, (strlen(*str) + strlen(a)) * sizeof(char));
 	strcat(*str, a);
+}
+// string reverse
+char *reverse_str(char *a) {
+	nullstr(result);
+	set_str(&result, a);	
+	for (long i = strlen(a) - 1; i > -1; i--)
+		result[strlen(a) - i - 1] = a[i];
+	return result;
+}
+
+bool starts_with(char *a, char *b) {
+	bool result = false;
+	if (strstr(a, b) != 0) {
+		long index = 0;
+		for (int i = 0; i < strlen(b); i++)
+			if (a[i] == b[i]) index++;
+		if (strlen(b) == index) result = true;
+	}
+	return result;
+}
+
+bool ends_with(char *a, char *b) {
+	return starts_with(reverse_str(a), reverse_str(b));
 }
 // Counts substrings in the string
 int count_substr(char *a, char *b) {
@@ -28,6 +54,7 @@ int count_substr(char *a, char *b) {
 		if (index == strlen(b)) result++;
 		index = 0;
 	}
+	if (ends_with(a, b)) result++;
 	return result;
 }
 
@@ -35,16 +62,7 @@ bool contains_substr(char *a, char *b) {
 	return strstr(a, b) != 0;
 }
 
-bool starts_with(char *a, char *b) {
-	bool result = false;
-	if (contains_substr(a, b)) {
-		long index = 0;
-		for (int i = 0; i < strlen(b); i++)
-			if (a[i] == b[i]) index++;
-		if (strlen(b) == index) result = true;
-	}
-	return result;
-}
+
 // returns a slice of the string from a to b
 char *slice_fromto(char *str, int a, int b) {
 	char *result = malloc((b - a) * sizeof(char));
@@ -63,17 +81,6 @@ char *slice_from(char *str, int a) {
 char *slice_to(char *str, int a) {
 	return slice_fromto(str, 0, a);
 }
-// string reverse
-char *reverse_str(char *a) {
-	nullstr(result);
-	set_str(&result, a);
-	for (long i = strlen(a) - 1; i > -1; i--) result[strlen(a) - i - 1] = a[i];
-	return result;
-}
-
-bool ends_with(char *a, char *b) {
-	return starts_with(reverse_str(a), reverse_str(b));
-}
 
 // split the string `a` by the substring `b`
 StringArray split(char*str, char*b) {
@@ -91,8 +98,6 @@ StringArray split(char*str, char*b) {
 	if (!contains_substr(a, b)) {
 		result = malloc(sizeof(char*));
 		set_str(&result[0], a);
-		/* result[0] = malloc(strlen(a)*sizeof(char)); */
-		/* strcpy(result[0], a); */
 		res.array = result;
 		res.length = 1;
 	} else {
@@ -185,4 +190,91 @@ char *strip(char *str, char a) {
 		end--;
 	if (start == end) return NULL;
 	return slice_fromto(str, start, end);
+}
+
+// String array functions
+StringArray new_strarray() {
+	StringArray sa;
+	sa.array = NULL;
+	sa.length = 0;
+	return sa;
+}
+
+void sa_free(StringArray *sa) {
+	if (sa->length == 0) return;
+	for (int i = 0; i < sa->length; i++) {
+		free(sa->array[i]);
+		sa->array[i] = NULL;
+	}
+	free(sa->array);
+	sa->array = NULL;
+	sa->length = 0;
+}
+
+void sa_add(StringArray *sa, char *str) {
+	sa->length++;
+	sa->array = realloc(sa->array, sa->length * sizeof(char*));
+	sa->array[sa->length - 1] = malloc(strlen(str)*sizeof(char));
+	strcpy(sa->array[sa->length - 1], str);
+}
+
+void sa_set(StringArray *sa, int index, char *str) {
+	if (index >= sa->length) return;
+	free(sa->array[index]);
+	sa->array[index] = NULL;
+	sa->array[index] = malloc(strlen(str) * sizeof(char));
+	strcpy(sa->array[index], str);
+}
+
+void sa_delete(StringArray *sa, int index) {
+	if (index >= sa->length) return;
+	if (index + 1 == sa->length) {
+		free(sa->array[index]);
+		sa->array[index] = NULL;
+	} else {
+		for (int i=index;i<sa->length - 1;i++) {
+			free(sa->array[i]);
+			sa->array[i] = NULL;
+			sa->array[i] = malloc(strlen(sa->array[i+1])*sizeof(char));
+			strcpy(sa->array[i], sa->array[i+1]);
+		}
+	}
+	sa->length--;
+	sa->array = realloc(sa->array,sa->length*sizeof(char*));
+}
+
+char *sa_get(StringArray sa, int index) {
+	if (index >= sa.length)
+		return NULL;
+	else
+		return sa.array[index];
+}
+
+int sa_index_of(StringArray sa, char *str) {
+	int res = -1;
+	for (int i = 0; i < sa.length; i++) {
+		if (strcmp(sa_get(sa, i), str) == 0) {
+			res = i;
+			break;
+		}
+	}
+	return res;
+}
+
+int sa_count(StringArray sa, char *str) {
+	int res = 0;
+	for (int i = 0; i < sa.length; i++)
+		if (strcmp(sa_get(sa, i), str) == 0)
+			res++;
+	return res;
+}
+
+
+bool sa_contains(StringArray sa, char *str) {
+	return sa_index_of(sa, str) != -1;
+}
+
+void sa_remove(StringArray *sa, char *str) {
+	while (sa_contains(*sa, str))
+		sa_delete(sa, sa_index_of(*sa, str));
 }
