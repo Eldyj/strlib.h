@@ -1,5 +1,5 @@
 // requires libraries: stdio.h, stdlib.h, string.h, stdbool.h
-#define version_of "0.2.0"
+#define version_of "0.3.0"
 #define nullstr(a) char *a = NULL
 // Structure that makes working with string arrays easier
 typedef struct {
@@ -17,8 +17,11 @@ void set_str(char **str, char *a) {
 }
 // Concatenates strings
 void add_str(char **str, char *a) {
-	*str = realloc(*str, (strlen(*str) + strlen(a)) * sizeof(char));
-	strcat(*str, a);
+	if (*str != NULL) {
+		*str = realloc(*str, (strlen(*str) + strlen(a)) * sizeof(char));
+		strcat(*str, a);
+	} else
+		set_str(str, a);
 }
 // string reverse
 char *reverse_str(char *a) {
@@ -190,6 +193,50 @@ char *strip(char *str, char a) {
 		end--;
 	if (start == end) return NULL;
 	return slice_fromto(str, start, end);
+}
+
+int write_file(char *filename, char *text) {
+	FILE *fp = fopen(filename, "w");
+	if (fp == NULL)
+		return 1;
+	int res = fputs(text, fp);
+	fclose(fp);
+	return res;
+}
+
+char *read_file(char *filename) {
+	char *res = NULL;
+	int len = 0, ch;
+	FILE *fp = fopen(filename, "r");
+	if (fp == NULL) {
+		return NULL;
+	} else {
+		while ((ch = getc(fp)) != EOF) {
+			len++;
+			res = realloc(res, len * sizeof(char));
+			res[len - 1] = ch;
+		}
+		fclose(fp);
+	}
+	return res;
+}
+
+char *user_input() {
+	char *res = NULL;
+	int len = 0, ch;
+	if (stdin == NULL) {
+		return NULL;
+	} else {
+		while ((ch = getc(stdin)) != EOF && ch != '\n') {
+			len++;
+			res = realloc(res, len * sizeof(char));
+			res[len - 1] = ch;
+		}
+	}
+	len++;
+	res = realloc(res, len * sizeof(char));
+	res[len - 1] = '\0';
+	return res;
 }
 
 // String array functions
