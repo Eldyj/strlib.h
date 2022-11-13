@@ -7,7 +7,7 @@ gcc -c -g strlib.c
 // main.c
 #include "strlib.h"
 ```
-Build main.c
-gcc main.c strlib.o
+Build main.c:
+```gcc main.c strlib.o```
 # Docs
 Coming soon...
