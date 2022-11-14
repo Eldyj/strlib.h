@@ -19,3 +19,4 @@ uninstall :
 	rm $(PREFIX)/include/strlib.h
 clean :
 	rm *.o
+	rm *.a
