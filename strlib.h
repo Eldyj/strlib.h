@@ -1,7 +1,10 @@
 #ifndef STRLIB_H
 #define STRLIB_H
-#define STRLIB_VERSION "1.0.0"
+#define STRLIB_VERSION "1.1.0"
 #define string(a) char *a = NULL
+#define bool int
+#define true 1
+#define false 0
 // Structure that makes working with string arrays easier
 typedef struct {
 	char **array;
@@ -16,6 +19,7 @@ void sa_set(StringArray*, int, char*);
 void sa_delete(StringArray*, int);
 char *sa_get(StringArray, int);
 char *sa_join(StringArray, char*);
+char *sa_repr(StringArray);
 int sa_index_of(StringArray, char*);
 int sa_count(StringArray, char*);
 bool sa_contains(StringArray, char*);
@@ -36,9 +40,12 @@ char *slice_fromto(char*, int, int);
 char *slice_from(char*, unsigned int);
 char *slice_to(char*, unsigned int);
 int index_of(char*, char*, unsigned int);
+int index_of_char(char*, char, unsigned int);
 char *strip(char*, char);
 StringArray split(char*, char*);
 char *replace(char*, char*, char*);
+char *minus_str(char*, char*);
+char *mult_str(char*, unsigned int);
 // Functions for working with files
 char *read_file(FILE*);
 #endif
