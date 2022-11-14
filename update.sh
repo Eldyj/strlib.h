@@ -19,8 +19,8 @@ else
 			[[ "$(uname -o)" == Android ]] && fprefix=$PREFIX
 			if [[ -f $fprefix/lib/libstrlib.a ]] && [[ -f $fprefix/include/strlib.h ]]
 			then
-				make uninstall
-				make install
+				sudo make uninstall
+				sudo make install
 			fi
 			version_file=$(cat strlib.h | grep STRLIB_VERSION | awk '{ print $3 }')
 			vflen=$(expr length "$version_file")
