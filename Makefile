@@ -12,3 +12,5 @@ install : strlib.a
 uninstall :
 	rm /usr/local/lib/libstrlib.a
 	rm /usr/local/include/strlib.h
+clean :
+	rm *.o
