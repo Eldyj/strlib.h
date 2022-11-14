@@ -17,12 +17,19 @@ else
 			cd strlib.h
 			chmod +x update.sh
 			chmod +x Makefile
+			trgos=$(uname -o)
 			fprefix="/usr/local"
-			[[ "$(uname -o)" == Android ]] && fprefix=$PREFIX
+			[[ "$trgos" == Android ]] && fprefix=$PREFIX
 			if [[ -f $fprefix/lib/libstrlib.a ]] && [[ -f $fprefix/include/strlib.h ]]
 			then
-				sudo make uninstall
-				sudo make install
+				if [[ "$trgos" == Android ]]
+				then
+					make uninstall
+					make install
+				else
+					sudo make uninstall
+					sudo make install
+				fi
 			fi
 			version_file=$(cat strlib.h | grep STRLIB_VERSION | awk '{ print $3 }')
 			vflen=$(expr length "$version_file")
