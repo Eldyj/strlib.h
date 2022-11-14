@@ -1,8 +1,7 @@
-// requires libraries: stdio.h, stdlib.h, string.h, stdbool.h
+// requires libraries: stdio.h, stdlib.h, string.h
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <stdbool.h>
 #include "strlib.h"
 
 // String array functions
@@ -83,6 +82,22 @@ char *sa_join(StringArray array, char* sep) {
 	return result;
 }
 
+char *sa_repr(StringArray sa) {
+	string(res);
+	set_str(&res, "[");
+	if (sa.length > 0) {
+		for (int i = 0; i < sa.length; i++) {
+			add_str(&res, "'");
+			add_str(&res, sa_get(sa, i));
+			add_str(&res, "'");
+			if (i < sa.length - 1)
+				add_str(&res,", ");
+		}
+	}
+	add_str(&res, "]");
+	return res;
+}
+
 int sa_index_of(StringArray sa, char *str) {
 	int res = -1;
 	for (int i = 0; i < sa.length; i++) {
@@ -97,7 +112,7 @@ int sa_index_of(StringArray sa, char *str) {
 int sa_count(StringArray sa, char *str) {
 	int res = 0;
 	for (int i = 0; i < sa.length; i++)
-		if (strcmp(sa_get(sa, i), str) == 0)
+		if (equals_str(sa_get(sa, i), str))
 			res++;
 	return res;
 }
@@ -149,26 +164,20 @@ char *reverse_str(char *a) {
 	return result;
 }
 
-//equals
+// compares two strings
 bool equals_str(char *a, char *b) {
 	return a == NULL && b == NULL || a != NULL && b != NULL && strcmp(a, b) == 0;
 }
 
 bool starts_with(char *a, char *b) {
-	bool result = false;
-	if (strstr(a, b) != 0) {
-		long index = 0;
-		for (int i = 0; i < strlen(b); i++)
-			if (a[i] == b[i]) index++;
-		if (strlen(b) == index) result = true;
-	}
-	return result;
+	return equals_str(b, bash_slice(a, 0, strlen(b)));
 }
 
 bool ends_with(char *a, char *b) {
 	return starts_with(reverse_str(a), reverse_str(b));
 }
 
+// slice from Bash: ${str:$a:$c}
 char *bash_slice(char *str, unsigned int a, unsigned int c) {
 	string(result);
 	unsigned long length = 0, to = a + c;
@@ -189,13 +198,13 @@ char *bash_slice(char *str, unsigned int a, unsigned int c) {
 unsigned int count_substr(char *a, char *b) {
 	unsigned int result = 0;
 	for (unsigned int i = 0; i < strlen(a); i++)
-		if (strcmp(bash_slice(a, i, strlen(b)), b) == 0)
+		if (equals_str(bash_slice(a, i, strlen(b)), b))
 			result++;
 	return result;
 }
 
 bool contains_substr(char *a, char *b) {
-	return strstr(a, b) != 0;
+	return a != NULL && b != NULL && strstr(a, b) != 0;
 }
 
 bool consists_of(char *a, char *b) {
@@ -226,10 +235,22 @@ int index_of(char *a, char *b, unsigned int entry) {
 	if (strstr(a, b) == 0 || entry > count_substr(a, b)) return -1;
 	int res = -1, entry_of = 0;
 	for (unsigned int i = 0; i < strlen(a); i++) {
-		if (strcmp(bash_slice(a, i, strlen(b)), b) == 0) {
+		if (equals_str(bash_slice(a, i, strlen(b)), b)) {
 			res = i;
 			entry_of++;
 			if (entry_of == entry) break;
+		}
+	}
+	return res;
+}
+
+int index_of_char(char *a, char b, unsigned int entry) {
+	int res = -1, count = 0;
+	for (int i = 0; i < strlen(a); i++) {
+		if (a[i] == b) {
+			res = i;
+			count++;
+			if (count == entry) break;
 		}
 	}
 	return res;
@@ -289,6 +310,21 @@ char *replace(char *str, char *b, char *c) {
 			add_str(&result, slice_from(str, indexes[count_b - 1] + strlen(b)));
 		free(indexes);
 	}
+	return result;
+}
+
+char *minus_str(char *a, char *b) {
+	string(res);
+	StringArray splitted = split(a, b);
+	for (unsigned int i=0; i<splitted.length; i++)
+		add_str(&res, sa_get(splitted, i));
+	return res;
+}
+
+char *mult_str(char *str, unsigned int c) {
+	string(result);
+	for (unsigned int i=0;i<c;i++)
+		add_str(&result, str);
 	return result;
 }
 
