@@ -16,6 +16,7 @@ else
         git clone https://github.com/Myshiak/strlib.h.git && {
 			cd strlib.h
 			chmod +x update.sh
+			chmod +X Makefile
 			fprefix="/usr/local"
 			[[ "$(uname -o)" == Android ]] && fprefix=$PREFIX
 			if [[ -f $fprefix/lib/libstrlib.a ]] && [[ -f $fprefix/include/strlib.h ]]
