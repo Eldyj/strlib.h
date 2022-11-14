@@ -4,10 +4,12 @@ Simple string library written in pure C
 make
 # Install
 ```bash
-make install```
+make install
+```
 # Uninstall
 ```bash
-make uninstall```
+make uninstall
+```
 # Usage
 ```c
 // main.c
