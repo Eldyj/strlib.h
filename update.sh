@@ -15,6 +15,7 @@ else
         rm -rf strlib.h
         git clone https://github.com/Myshiak/strlib.h.git && {
 			cd strlib.h
+			chmod +x update.sh
 			fprefix="/usr/local"
 			[[ "$(uname -o)" == Android ]] && fprefix=$PREFIX
 			if [[ -f $fprefix/lib/libstrlib.a ]] && [[ -f $fprefix/include/strlib.h ]]
