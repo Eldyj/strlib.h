@@ -18,6 +18,8 @@ vflen=$(expr length "$version_file")
 version_file=${version_file:1:$((vflen-2))}
 if [[ $version_file == $version_web ]]
 then
+    [[ -f Makefile ]] && chmod +x Makefile
+    [[ -f update.sh ]] && chmod +x update.sh
     echo "Nothing to update"
 else
     {
