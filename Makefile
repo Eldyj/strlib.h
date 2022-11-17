@@ -11,12 +11,14 @@ strlib.a : strlib.o
 	ar rcs libstrlib.a strlib.o
 
 install : strlib.a
-	cp libstrlib.a $(PREFIX)/lib
+	mv libstrlib.a $(PREFIX)/lib
 	cp strlib.h $(PREFIX)/include
 
 uninstall :
 	rm $(PREFIX)/lib/libstrlib.a
 	rm $(PREFIX)/include/strlib.h
+
 clean :
 	rm *.o
-	rm *.a
+
+reinstall : uninstall install
