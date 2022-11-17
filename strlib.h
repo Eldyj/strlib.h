@@ -1,6 +1,6 @@
 #ifndef STRLIB_H
 #define STRLIB_H
-#define STRLIB_VERSION "1.1.0"
+#define STRLIB_VERSION "1.2.0"
 #define string(a) char *a = NULL
 #define bool int
 #define true 1
@@ -10,7 +10,6 @@ typedef struct {
 	char **array;
 	unsigned int length;
 } StringArray;
-
 // String array functions
 StringArray new_strarray(void);
 void sa_free(StringArray*);
@@ -47,5 +46,7 @@ char *replace(char*, char*, char*);
 char *minus_str(char*, char*);
 char *mult_str(char*, unsigned int);
 // Functions for working with files
+char *read_to(FILE*, int);
 char *read_file(FILE*);
+char *read_line(FILE*);
 #endif
