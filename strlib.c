@@ -26,7 +26,7 @@ void sa_free(StringArray *sa) {
 void sa_add(StringArray *sa, char *str) {
 	sa->length++;
 	sa->array = realloc(sa->array, sa->length * sizeof(char*));
-	sa->array[sa->length - 1] = malloc((strlen(str)+1)*sizeof(char));
+	sa->array[sa->length - 1] = malloc((strlen(str) + 1)*sizeof(char));
 	strcpy(sa->array[sa->length - 1], str);
 	strcat(sa->array[sa->length - 1], "\0");
 }
@@ -51,16 +51,16 @@ void sa_delete(StringArray *sa, int index) {
 		free(sa->array[index]);
 		sa->array[index] = NULL;
 	} else {
-		for (int i=index;i<sa->length - 1;i++) {
+		for (int i = index; i<sa->length - 1; i++) {
 			free(sa->array[i]);
 			sa->array[i] = NULL;
-			sa->array[i] = malloc((strlen(sa->array[i+1])+1)*sizeof(char));
-			strcpy(sa->array[i], sa->array[i+1]);
+			sa->array[i] = malloc((strlen(sa->array[i + 1]) + 1) * sizeof(char));
+			strcpy(sa->array[i], sa->array[i + 1]);
 			strcat(sa->array[i], "\0");
 		}
 	}
 	sa->length--;
-	sa->array = realloc(sa->array,sa->length*sizeof(char*));
+	sa->array = realloc(sa->array,sa->length * sizeof(char*));
 }
 
 char *sa_get(StringArray sa, int index) {
@@ -71,14 +71,12 @@ char *sa_get(StringArray sa, int index) {
 }
 
 char *sa_join(StringArray array, char* sep) {
-	long size_res = strlen(sep) * (array.length - 1);
-	for (int i = 0; i < array.length; i++) size_res += strlen(array.array[i]);
-	char *result = malloc((size_res + 1) * sizeof(char));
+	string(result);
 	for (int i = 0; i < array.length; i++) {
-		strcat(result, array.array[i]);
-		if (i != array.length - 1) strcat(result, sep);
+		add_str(&result, sa_get(array, i));
+		if (i != array.length - 1 && sep != NULL)
+			add_str(&result, sep);
 	}
-	strcat(result, "\0");
 	return result;
 }
 
@@ -101,7 +99,7 @@ char *sa_repr(StringArray sa) {
 int sa_index_of(StringArray sa, char *str) {
 	int res = -1;
 	for (int i = 0; i < sa.length; i++) {
-		if (strcmp(sa_get(sa, i), str) == 0) {
+		if (equals_str(sa_get(sa, i), str)) {
 			res = i;
 			break;
 		}
@@ -277,7 +275,7 @@ StringArray split(char*str, char*b) {
 		if (indexes[0] != 0)
 			sa_add(&res, slice_to(str, indexes[0]));
 		for (int i = 0; i < count_b - 1; i++) {
-			while (indexes[i] + strlen(b) == indexes[i + 1]) i++;
+			if (indexes[i] + strlen(b) == indexes[i + 1]) continue;
 			sa_add(&res, slice_fromto(str, indexes[i] + strlen(b), indexes[i + 1]));
 		}
 		if (indexes[count_b - 1] + strlen(b) < strlen(str))
@@ -301,7 +299,7 @@ char *replace(char *str, char *b, char *c) {
 		if (indexes[0] != 0)
 			add_str(&result, slice_to(str, indexes[0]));
 		for (int i = 0; i < count_b - 1; i++) {
-				add_str(&result, c);
+			add_str(&result, c);
 			if (indexes[i] + strlen(b) == indexes[i + 1]) continue;
 			add_str(&result, slice_fromto(str, indexes[i] + strlen(b), indexes[i + 1]));
 		}
@@ -323,20 +321,20 @@ char *minus_str(char *a, char *b) {
 
 char *mult_str(char *str, unsigned int c) {
 	string(result);
-	for (unsigned int i=0;i<c;i++)
+	for (unsigned int i = 0; i < c; i++)
 		add_str(&result, str);
 	return result;
 }
 
 // Functions for working with files
-char *read_file(FILE *file) {
+char *read_to(FILE *file, int to) {
 	string(res);
 	int len = 0, ch;
 	if (file == NULL)
 		return NULL;
 	while (1) {
 		ch = getc(file);
-		if (ch == EOF || file == stdin && ch == '\n') {
+		if (ch == to) {
 			len++;
 			res = realloc(res, len * sizeof(char));
 			res[len - 1] = '\0';
@@ -347,4 +345,12 @@ char *read_file(FILE *file) {
 		res[len - 1] = (char)ch;
 	}
 	return res;
+}
+
+char *read_file(FILE *file) {
+	return read_to(file, EOF);
+}
+
+char *read_line(FILE *file) {
+	return read_to(file, (int)'\n');
 }
