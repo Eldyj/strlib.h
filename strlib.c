@@ -230,7 +230,6 @@ char *slice_to(char *str, unsigned int a) {
 }
 
 int index_of(char *a, char *b, unsigned int entry) {
-	if (strstr(a, b) == 0 || entry > count_substr(a, b)) return -1;
 	int res = -1, entry_of = 0;
 	for (unsigned int i = 0; i < strlen(a); i++) {
 		if (equals_str(bash_slice(a, i, strlen(b)), b)) {
@@ -267,19 +266,25 @@ char *strip(char *str, char a) {
 // split the string `a` by the substring `b`
 StringArray split(char*str, char*b) {
 	StringArray res =  new_strarray();
-	unsigned int count_b = count_substr(str, b),
-		*indexes = malloc(count_b * sizeof(unsigned int));
+	unsigned long count_b = count_substr(str, b),
+		blen = strlen(b),
+		lenstr = strlen(str),
+		*indexes = malloc(count_b * sizeof(unsigned long));
 	if (count_b > 0) {
-		for (int i = 0; i < count_b; i++)
-			indexes[i] = index_of(str, b, i + 1);
+		for (int i = 0; i < count_b; i++) {
+			if (i == 0)
+				indexes[i] = index_of(str, b, 1);
+			else
+				indexes[i] = index_of(slice_from(str, indexes[i - 1] + blen), b, 1) + indexes[i - 1] + blen;
+		}
 		if (indexes[0] != 0)
 			sa_add(&res, slice_to(str, indexes[0]));
 		for (int i = 0; i < count_b - 1; i++) {
-			if (indexes[i] + strlen(b) == indexes[i + 1]) continue;
-			sa_add(&res, slice_fromto(str, indexes[i] + strlen(b), indexes[i + 1]));
+			if (indexes[i] + blen == indexes[i + 1]) continue;
+			sa_add(&res, slice_fromto(str, indexes[i] + blen, indexes[i + 1]));
 		}
-		if (indexes[count_b - 1] + strlen(b) < strlen(str))
-			sa_add(&res, slice_from(str, indexes[count_b - 1] + strlen(b)));
+		if (indexes[count_b - 1] + blen < lenstr)
+			sa_add(&res, slice_from(str, indexes[count_b - 1] + blen));
 		free(indexes);
 	} else {
 		sa_add(&res, str);
@@ -288,24 +293,32 @@ StringArray split(char*str, char*b) {
 }
 
 char *replace(char *str, char *b, char *c) {
+	unsigned long count_b = count_substr(str, b),
+		blen = strlen(b),
+		lenstr = strlen(str),
+		*indexes = malloc(count_b * sizeof(unsigned long));
 	string(result);
-	unsigned int count_b = count_substr(str, b),
-		*indexes = malloc(count_b * sizeof(unsigned int));
-	if (!contains_substr(str, b)) {
-		set_str(&result, str);
+	if (count_b == 0) {
+		result = malloc((lenstr + 1) * sizeof(char));
+		strcpy(result, str);
+		strcat(result, "\0");
 	} else {
-		for (int i = 0; i < count_b; i++)
-			indexes[i] = index_of(str, b, i + 1);
+		for (int i = 0; i < count_b; i++) {
+			if (i == 0)
+				indexes[i] = index_of(str, b, 1);
+			else
+				indexes[i] = index_of(slice_from(str, indexes[i - 1] + blen), b, 1) + indexes[i - 1] + blen;
+		}
 		if (indexes[0] != 0)
 			add_str(&result, slice_to(str, indexes[0]));
 		for (int i = 0; i < count_b - 1; i++) {
 			add_str(&result, c);
-			if (indexes[i] + strlen(b) == indexes[i + 1]) continue;
-			add_str(&result, slice_fromto(str, indexes[i] + strlen(b), indexes[i + 1]));
+			if (indexes[i] + blen == indexes[i + 1]) continue;
+			add_str(&result, slice_fromto(str, indexes[i] + blen, indexes[i + 1]));
 		}
 		add_str(&result, c);
-		if (indexes[count_b - 1] + strlen(b) < strlen(str))
-			add_str(&result, slice_from(str, indexes[count_b - 1] + strlen(b)));
+		if (indexes[count_b - 1] + blen < lenstr)
+			add_str(&result, slice_from(str, indexes[count_b - 1] + blen));
 		free(indexes);
 	}
 	return result;
