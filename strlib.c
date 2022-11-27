@@ -31,7 +31,12 @@ void sa_add(StringArray *sa, char *str) {
 	strcat(sa->array[sa->length - 1], "\0");
 }
 
-void sa_set(StringArray *sa, int index, char *str) {
+void sa_add_sa(StringArray *sa, StringArray a) {
+	for (int i = 0; i < a.length; i++)
+		sa_add(sa, sa_get(a, i));
+}
+
+void sa_set(StringArray *sa, unsigned int index, char *str) {
 	if (index > sa->length)
 		return;
 	else if (index == sa->length)
@@ -45,13 +50,13 @@ void sa_set(StringArray *sa, int index, char *str) {
 	}
 }
 
-void sa_delete(StringArray *sa, int index) {
+void sa_delete(StringArray *sa, unsigned int index) {
 	if (index >= sa->length) return;
 	if (index + 1 == sa->length) {
 		free(sa->array[index]);
 		sa->array[index] = NULL;
 	} else {
-		for (int i = index; i<sa->length - 1; i++) {
+		for (unsigned int i = index; i<sa->length - 1; i++) {
 			free(sa->array[i]);
 			sa->array[i] = NULL;
 			sa->array[i] = malloc((strlen(sa->array[i + 1]) + 1) * sizeof(char));
@@ -63,7 +68,7 @@ void sa_delete(StringArray *sa, int index) {
 	sa->array = realloc(sa->array,sa->length * sizeof(char*));
 }
 
-char *sa_get(StringArray sa, int index) {
+char *sa_get(StringArray sa, unsigned int index) {
 	if (index >= sa.length)
 		return NULL;
 	else
@@ -123,6 +128,57 @@ bool sa_contains(StringArray sa, char *str) {
 void sa_remove(StringArray *sa, char *str) {
 	while (sa_contains(*sa, str))
 		sa_delete(sa, sa_index_of(*sa, str));
+}
+
+StringArray sa_slice_fromto(StringArray sa, unsigned int from, unsigned int to) {
+	StringArray res = new_strarray();
+	for (unsigned int i = from; i < to; i++)
+		sa_add(&res, sa_get(sa, i));
+	return res;
+}
+
+
+StringArray sa_slice_from(StringArray sa, unsigned int from) {
+	return sa_slice_fromto(sa, from, sa.length);
+}
+
+
+StringArray sa_slice_to(StringArray sa, unsigned int to) {
+	return sa_slice_fromto(sa, 0, to);
+}
+
+void sa_insert(StringArray *sa, unsigned int to, char *a) {
+	if (to < sa->length) {
+		StringArray before = sa_slice_to(*sa, to),
+					after = sa_slice_from(*sa, to);
+		sa_free(sa);
+		if (before.length != 0)
+			sa_add_sa(sa, before);
+		sa_add(sa, a);
+		if (after.length != 0)
+			sa_add_sa(sa, after);
+		sa_free(&before);
+		sa_free(&after);
+	} else if (to == sa->length)
+		sa_add(sa, a);
+}
+
+void sa_insert_sa(StringArray *sa, unsigned int to, StringArray a) {
+	if (to < sa->length) {
+		StringArray before = sa_slice_to(*sa, to),
+					after = sa_slice_from(*sa, to);
+		sa_free(sa);
+		if (before.length != 0)
+			sa_add_sa(sa, before);
+		if (a.length != 0)
+			sa_add_sa(sa, a);
+		if (after.length != 0)
+			sa_add_sa(sa, after);
+		sa_free(&before);
+		sa_free(&after);
+	} else if (to == sa->length)
+		if (a.length != 0)
+			sa_add_sa(sa, a);
 }
 
 // String functions
@@ -322,6 +378,22 @@ char *replace(char *str, char *b, char *c) {
 		free(indexes);
 	}
 	return result;
+}
+
+StringArray split_sa(char *a, StringArray sa) {
+	StringArray res = new_strarray();
+	if (sa.length == 1)
+		sa_add_sa(&res, split(a, sa_get(sa, 0)));
+	else if (sa.length == 0)
+		sa_add(&res, a);
+	else {
+		string(res_str);
+		set_str(&res_str, a);
+		for (int i = 1; i < sa.length; i++)
+			set_str(&res_str, replace(res_str, sa_get(sa, i), sa_get(sa, 0)));
+		sa_add_sa(&res, split(res_str, sa_get(sa, 0)));
+	}
+	return res;
 }
 
 char *minus_str(char *a, char *b) {
