@@ -1,6 +1,6 @@
 #ifndef STRLIB_H
 #define STRLIB_H
-#define STRLIB_VERSION "1.2.1"
+#define STRLIB_VERSION "1.3.0"
 #define string(a) char *a = NULL
 #define bool int
 #define true 1
@@ -14,15 +14,21 @@ typedef struct {
 StringArray new_strarray(void);
 void sa_free(StringArray*);
 void sa_add(StringArray*, char*);
-void sa_set(StringArray*, int, char*);
-void sa_delete(StringArray*, int);
-char *sa_get(StringArray, int);
+void sa_add_sa(StringArray*, StringArray);
+void sa_set(StringArray*, unsigned int, char*);
+void sa_delete(StringArray*, unsigned int);
+char *sa_get(StringArray, unsigned int);
 char *sa_join(StringArray, char*);
 char *sa_repr(StringArray);
 int sa_index_of(StringArray, char*);
 int sa_count(StringArray, char*);
 bool sa_contains(StringArray, char*);
 void sa_remove(StringArray*, char*);
+StringArray sa_slice_fromto(StringArray, unsigned int, unsigned int);
+StringArray sa_slice_from(StringArray, unsigned int);
+StringArray sa_slice_to(StringArray, unsigned int);
+void sa_insert(StringArray*, unsigned int, char*);
+void sa_insert_sa(StringArray*, unsigned int, StringArray);
 // String functions
 void set_str(char**, char*);
 void add_str(char**, char*);
@@ -42,6 +48,7 @@ int index_of(char*, char*, unsigned int);
 int index_of_char(char*, char, unsigned int);
 char *strip(char*, char);
 StringArray split(char*, char*);
+StringArray split_sa(char*, StringArray);
 char *replace(char*, char*, char*);
 char *minus_str(char*, char*);
 char *mult_str(char*, unsigned int);
