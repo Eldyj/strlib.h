@@ -4,13 +4,13 @@ ifeq ($(shell uname -o),Android)
 else
 	PREFIX = /usr/local
 endif
-strlib.o :
+objectfile :
 	gcc -c -g strlib.c
 
-strlib.a : strlib.o
+staticlib : objectfile
 	ar rcs libstrlib.a strlib.o
 
-install : strlib.a
+install : staticlib
 	mv libstrlib.a $(PREFIX)/lib
 	cp strlib.h $(PREFIX)/include
 
