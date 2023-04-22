@@ -1,23 +1,27 @@
 # strlib.h
 Simple string library written in pure C
-# Build
+## Build
 ```bash
 make
 ```
-# Install
+## Install
 ```bash
 make install
 ```
-# Uninstall
+## Uninstall
 ```bash
 make uninstall
 ```
-# Usage
+## Usage
 ```c
 // main.c
 #include <strlib.h>
 ```
 Build main.c:
 ```gcc main.c -lstrlib```
-# Docs
+
+## Examples
+<a href="./examples">examples folder</a>
+
+## Docs
 Coming soon...
