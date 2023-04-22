@@ -21,7 +21,7 @@ char *sa_get(StringArray, unsigned int);
 char *sa_join(StringArray, char*);
 char *sa_repr(StringArray);
 int sa_index_of(StringArray, char*);
-int sa_count(StringArray, char*);
+unsigned long sa_count(StringArray, char*);
 bool sa_contains(StringArray, char*);
 void sa_remove(StringArray*, char*);
 StringArray sa_slice_fromto(StringArray, unsigned int, unsigned int);

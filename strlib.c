@@ -13,18 +13,21 @@ StringArray new_strarray() {
 }
 
 void sa_free(StringArray *sa) {
-	if (sa->length == 0) return;
-	for (unsigned long i = 0; i < sa->length; i++) {
+	if (sa->length == 0)
+		return;
+		
+	for (unsigned long i = 0; i < sa->length; ++i) {
 		free(sa->array[i]);
 		sa->array[i] = NULL;
 	}
+	
 	free(sa->array);
 	sa->array = NULL;
 	sa->length = 0;
 }
 
 void sa_add(StringArray *sa, char *str) {
-	sa->length++;
+	++sa->length;
 	sa->array = realloc(sa->array, sa->length * sizeof(char*));
 	sa->array[sa->length - 1] = malloc((strlen(str) + 1)*sizeof(char));
 	strcpy(sa->array[sa->length - 1], str);
@@ -32,7 +35,7 @@ void sa_add(StringArray *sa, char *str) {
 }
 
 void sa_add_sa(StringArray *sa, StringArray a) {
-	for (unsigned long i = 0; i < a.length; i++)
+	for (unsigned long i = 0; i < a.length; ++i)
 		sa_add(sa, sa_get(a, i));
 }
 
@@ -58,7 +61,7 @@ void sa_delete(StringArray *sa, unsigned int index) {
 		free(sa->array[index]);
 		sa->array[index] = NULL;
 	} else {
-		for (unsigned int i = index; i<sa->length - 1; i++) {
+		for (unsigned int i = index; i<sa->length - 1; ++i) {
 			free(sa->array[i]);
 			sa->array[i] = NULL;
 			sa->array[i] = malloc((strlen(sa->array[i + 1]) + 1) * sizeof(char));
@@ -105,21 +108,20 @@ char *sa_repr(StringArray sa) {
 }
 
 int sa_index_of(StringArray sa, char *str) {
-	int res = -1;
-	for (unsigned long i = 0; i < sa.length; ++i) {
-		if (equals_str(sa_get(sa, i), str)) {
-			res = i;
-			break;
-		}
-	}
-	return res;
+	for (unsigned long i = 0; i < sa.length; ++i)
+		if (equals_str(sa_get(sa, i), str))
+			return i;
+			
+	return -1;
 }
 
-int sa_count(StringArray sa, char *str) {
-	int res = 0;
+unsigned long sa_count(StringArray sa, char *str) {
+	unsigned long res = 0;
+	
 	for (unsigned long i = 0; i < sa.length; ++i)
 		if (equals_str(sa_get(sa, i), str))
 			++res;
+			
 	return res;
 }
 
@@ -409,7 +411,7 @@ char *replace(char *str, char *b, char *c) {
 		strcpy(result, str);
 		strcat(result, "\0");
 	} else {
-		for (unsigned long i = 0; i < count_b; i++) {
+		for (unsigned long i = 0; i < count_b; ++i) {
 			if (i == 0)
 				indexes[i] = index_of(str, b, 1);
 			else {
@@ -446,7 +448,7 @@ char *replace(char *str, char *b, char *c) {
 	return result;
 }
 
-// TODO: fix memory leaks in split_sa
+// TODO: check for memory leaks
 StringArray split_sa(char *a, StringArray sa) {
 	StringArray res = new_strarray();
 	
@@ -458,21 +460,28 @@ StringArray split_sa(char *a, StringArray sa) {
 		string(res_str);
 		set_str(&res_str, a);
 		
-		for (unsigned long i = 1; i < sa.length; ++i)
-			set_str(&res_str, replace(res_str, sa_get(sa, i), sa_get(sa, 0)));
-		
-		sa_add_sa(&res, split(res_str, sa_get(sa, 0)));
+		for (unsigned long i = 1; i < sa.length; ++i) {
+			char *s0 = replace(res_str, sa_get(sa, i), sa_get(sa, 0));
+			set_str(&res_str, s0);
+			free(s0);
+		}
+
+		StringArray sa = split(res_str, sa_get(sa, 0));
+		sa_add_sa(&res, sa);
+		free(sa.array);
+		sa.length = 0;
 	}
 	return res;
 }
 
-// TODO: fix memory leaks in minus_str
 char *minus_str(char *a, char *b) {
 	string(res);
 	StringArray splitted = split(a, b);
 
 	for (unsigned long i = 0; i<splitted.length; ++i)
 		add_str(&res, sa_get(splitted, i));
+
+	sa_free(&splitted);
 
 	return res;
 }
