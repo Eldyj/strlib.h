@@ -5,7 +5,7 @@ else
 	PREFIX = /usr/local
 endif
 objectfile :
-	gcc -c -g strlib.c
+	gcc -c -g3 -o3 -Wextra -Wall -o strlib.o strlib.c
 
 staticlib : objectfile
 	ar rcs libstrlib.a strlib.o
