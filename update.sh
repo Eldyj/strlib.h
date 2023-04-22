@@ -1,6 +1,6 @@
 #!/usr/bin/bash
 echo "Getting versions..."
-version_web=$(curl https://raw.githubusercontent.com/Myshiak/strlib.h/main/strlib.h | grep STRLIB_VERSION | awk '{ print $3 }')
+version_web=$(curl https://raw.githubusercontent.com/Eldyj/strlib.h/main/strlib.h | grep STRLIB_VERSION | awk '{ print $3 }')
 if [[ -z $version_web ]]
 then
 	echo "Updating failed: invalid version on github"
@@ -25,7 +25,7 @@ else
     {
         cd ..
         rm -rf strlib.h
-        git clone https://github.com/Myshiak/strlib.h.git && {
+        git clone https://github.com/Eldyj/strlib.h.git && {
 			cd strlib.h
 			chmod +x update.sh
 			chmod +x Makefile

@@ -80,7 +80,7 @@ char *sa_get(StringArray sa, unsigned int index) {
 
 char *sa_join(StringArray array, char* sep) {
 	string(result);
-	for (unsigned long i = 0; i < array.length; i++) {
+	for (unsigned long i = 0; i < array.length; ++i) {
 		add_str(&result, sa_get(array, i));
 		if (i != array.length - 1 && sep != NULL)
 			add_str(&result, sep);
@@ -92,7 +92,7 @@ char *sa_repr(StringArray sa) {
 	string(res);
 	set_str(&res, "[");
 	if (sa.length > 0) {
-		for (unsigned long i = 0; i < sa.length; i++) {
+		for (unsigned long i = 0; i < sa.length; ++i) {
 			add_str(&res, "'");
 			add_str(&res, sa_get(sa, i));
 			add_str(&res, "'");
@@ -106,7 +106,7 @@ char *sa_repr(StringArray sa) {
 
 int sa_index_of(StringArray sa, char *str) {
 	int res = -1;
-	for (unsigned long i = 0; i < sa.length; i++) {
+	for (unsigned long i = 0; i < sa.length; ++i) {
 		if (equals_str(sa_get(sa, i), str)) {
 			res = i;
 			break;
@@ -117,7 +117,7 @@ int sa_index_of(StringArray sa, char *str) {
 
 int sa_count(StringArray sa, char *str) {
 	int res = 0;
-	for (unsigned long i = 0; i < sa.length; i++)
+	for (unsigned long i = 0; i < sa.length; ++i)
 		if (equals_str(sa_get(sa, i), str))
 			++res;
 	return res;
@@ -136,7 +136,7 @@ void sa_remove(StringArray *sa, char *str) {
 StringArray sa_slice_fromto(StringArray sa, unsigned int from, unsigned int to) {
 	StringArray res = new_strarray();
 	
-	for (unsigned int i = from; i < to; i++)
+	for (unsigned int i = from; i < to; ++i)
 		sa_add(&res, sa_get(sa, i));
 		
 	return res;
@@ -261,7 +261,7 @@ char *bash_slice(char *str, unsigned int a, unsigned int c) {
 		result = realloc(result, length * sizeof(char));
 		result[length - 1] = str[i];
 	}
-	length++;
+	++length;
 	result = realloc(result, length * sizeof(char));
 	result[length - 1] = '\0';
 	return result;
@@ -324,8 +324,8 @@ int index_of(char *a, char *b, unsigned int entry) {
 }
 
 int index_of_char(char *a, char b, unsigned int entry) {
-	size_t count = 0;
-	for (size_t i = 0; i < strlen(a); ++i) {
+	unsigned long count = 0;
+	for (unsigned long i = 0; i < strlen(a); ++i) {
 		if (a[i] == b) {
 			++count;
 			if (count == entry)
@@ -337,11 +337,16 @@ int index_of_char(char *a, char b, unsigned int entry) {
 
 char *strip(char *str, char a) {
 	size_t start = 0, end = strlen(str);
+	
 	while (str[start] == a && start < strlen(str))
 		++start;
+		
 	while (str[end - 1] == a && end > 0)
 		--end;
-	if (start == end) return NULL;
+		
+	if (start == end)
+		return NULL;
+	
 	return slice_fromto(str, start, end);
 }
 

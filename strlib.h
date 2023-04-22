@@ -1,6 +1,6 @@
 #ifndef STRLIB_H
 #define STRLIB_H
-#define STRLIB_VERSION "1.3.0"
+#define STRLIB_VERSION "1.3.1"
 #define string(a) char *a = NULL
 #define bool int
 #define true 1
