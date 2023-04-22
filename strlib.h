@@ -53,7 +53,7 @@ char *replace(char*, char*, char*);
 char *minus_str(char*, char*);
 char *mult_str(char*, unsigned int);
 // Functions for working with files
-char *read_to(FILE*, int);
+char *read_to(FILE*, char);
 char *read_file(FILE*);
 char *read_line(FILE*);
 #endif

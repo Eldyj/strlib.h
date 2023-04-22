@@ -14,7 +14,7 @@ StringArray new_strarray() {
 
 void sa_free(StringArray *sa) {
 	if (sa->length == 0) return;
-	for (int i = 0; i < sa->length; i++) {
+	for (unsigned long i = 0; i < sa->length; i++) {
 		free(sa->array[i]);
 		sa->array[i] = NULL;
 	}
@@ -32,7 +32,7 @@ void sa_add(StringArray *sa, char *str) {
 }
 
 void sa_add_sa(StringArray *sa, StringArray a) {
-	for (int i = 0; i < a.length; i++)
+	for (unsigned long i = 0; i < a.length; i++)
 		sa_add(sa, sa_get(a, i));
 }
 
@@ -51,7 +51,9 @@ void sa_set(StringArray *sa, unsigned int index, char *str) {
 }
 
 void sa_delete(StringArray *sa, unsigned int index) {
-	if (index >= sa->length) return;
+	if (index >= sa->length)
+		return;
+		
 	if (index + 1 == sa->length) {
 		free(sa->array[index]);
 		sa->array[index] = NULL;
@@ -78,7 +80,7 @@ char *sa_get(StringArray sa, unsigned int index) {
 
 char *sa_join(StringArray array, char* sep) {
 	string(result);
-	for (int i = 0; i < array.length; i++) {
+	for (unsigned long i = 0; i < array.length; i++) {
 		add_str(&result, sa_get(array, i));
 		if (i != array.length - 1 && sep != NULL)
 			add_str(&result, sep);
@@ -90,7 +92,7 @@ char *sa_repr(StringArray sa) {
 	string(res);
 	set_str(&res, "[");
 	if (sa.length > 0) {
-		for (int i = 0; i < sa.length; i++) {
+		for (unsigned long i = 0; i < sa.length; i++) {
 			add_str(&res, "'");
 			add_str(&res, sa_get(sa, i));
 			add_str(&res, "'");
@@ -104,7 +106,7 @@ char *sa_repr(StringArray sa) {
 
 int sa_index_of(StringArray sa, char *str) {
 	int res = -1;
-	for (int i = 0; i < sa.length; i++) {
+	for (unsigned long i = 0; i < sa.length; i++) {
 		if (equals_str(sa_get(sa, i), str)) {
 			res = i;
 			break;
@@ -115,9 +117,9 @@ int sa_index_of(StringArray sa, char *str) {
 
 int sa_count(StringArray sa, char *str) {
 	int res = 0;
-	for (int i = 0; i < sa.length; i++)
+	for (unsigned long i = 0; i < sa.length; i++)
 		if (equals_str(sa_get(sa, i), str))
-			res++;
+			++res;
 	return res;
 }
 
@@ -133,8 +135,10 @@ void sa_remove(StringArray *sa, char *str) {
 
 StringArray sa_slice_fromto(StringArray sa, unsigned int from, unsigned int to) {
 	StringArray res = new_strarray();
+	
 	for (unsigned int i = from; i < to; i++)
 		sa_add(&res, sa_get(sa, i));
+		
 	return res;
 }
 
@@ -149,36 +153,45 @@ StringArray sa_slice_to(StringArray sa, unsigned int to) {
 }
 
 void sa_insert(StringArray *sa, unsigned int to, char *a) {
-	if (to < sa->length) {
-		StringArray before = sa_slice_to(*sa, to),
-					after = sa_slice_from(*sa, to);
-		sa_free(sa);
-		if (before.length != 0)
-			sa_add_sa(sa, before);
-		sa_add(sa, a);
-		if (after.length != 0)
-			sa_add_sa(sa, after);
-		sa_free(&before);
-		sa_free(&after);
-	} else if (to == sa->length)
-		sa_add(sa, a);
+	if (to >= sa->length)
+		return sa_add(sa, a);
+	
+	StringArray before = sa_slice_to(*sa, to),
+				after = sa_slice_from(*sa, to);
+				
+	sa_free(sa);
+		
+	if (before.length != 0)
+		sa_add_sa(sa, before);
+			
+	sa_add(sa, a);
+		
+	if (after.length != 0)
+		sa_add_sa(sa, after);
+			
+	sa_free(&before);
+	sa_free(&after);
 }
 
 void sa_insert_sa(StringArray *sa, unsigned int to, StringArray a) {
 	if (to < sa->length) {
 		StringArray before = sa_slice_to(*sa, to),
 					after = sa_slice_from(*sa, to);
+					
 		sa_free(sa);
-		if (before.length != 0)
+		
+		if (before.length)
 			sa_add_sa(sa, before);
-		if (a.length != 0)
+			
+		if (a.length)
 			sa_add_sa(sa, a);
-		if (after.length != 0)
+			
+		if (after.length)
 			sa_add_sa(sa, after);
+			
 		sa_free(&before);
 		sa_free(&after);
-	} else if (to == sa->length)
-		if (a.length != 0)
+	} else if (to == sa->length && a.length)
 			sa_add_sa(sa, a);
 }
 
@@ -212,9 +225,11 @@ char *concat(char *a, char *b) {
 // string reverse
 char *reverse_str(char *a) {
 	string(result);
-	set_str(&result, a);	
-	for (long i = strlen(a) - 1; i > -1; i--)
+	set_str(&result, a);
+		
+	for (long i = strlen(a) - 1; i > -1; --i)
 		result[strlen(a) - i - 1] = a[i];
+		
 	add_str(&result, "\0");
 	return result;
 }
@@ -241,7 +256,7 @@ char *bash_slice(char *str, unsigned int a, unsigned int c) {
 	unsigned long length = 0, to = a + c;
 	if (to >= strlen(str))
 		to = strlen(str);
-	for (unsigned long i = a; i < to; i++) {
+	for (unsigned long i = a; i < to; ++i) {
 		++length;
 		result = realloc(result, length * sizeof(char));
 		result[length - 1] = str[i];
@@ -255,10 +270,10 @@ char *bash_slice(char *str, unsigned int a, unsigned int c) {
 // Counts substrings in the string
 unsigned int count_substr(char *a, char *b) {
 	unsigned int result = 0;
-	for (unsigned int i = 0; i < strlen(a); i++) {
+	for (unsigned int i = 0; i < strlen(a); ++i) {
 		char *s = bash_slice(a, i, strlen(b));
 		if (equals_str(s, b))
-			result++;
+			++result;
 		free(s);
 	}
 	return result;
@@ -276,9 +291,9 @@ bool consists_of(char *a, char *b) {
 char *slice_fromto(char *str, int a, int b) {
 	char *result = malloc((b - a + 1) * sizeof(char));
 	int index = 0;
-	for (int i = a; i < b; i++) {
+	for (int i = a; i < b; ++i) {
 		result[index] = str[i];
-		index++;
+		++index;
 	}
 	result[index] = '\0';
 	return result;
@@ -294,7 +309,7 @@ char *slice_to(char *str, unsigned int a) {
 
 int index_of(char *a, char *b, unsigned int entry) {
 	size_t entry_of = 0;
-	for (size_t i = 0; i < strlen(a); i++) {
+	for (size_t i = 0; i < strlen(a); ++i) {
 		char *s = bash_slice(a, i, strlen(b));
 		if (equals_str(s, b)) {
 			++entry_of;
@@ -302,16 +317,15 @@ int index_of(char *a, char *b, unsigned int entry) {
 			
 			if (entry_of == entry)
 				return i;
-		} else {
+		} else
 			free(s);
-		}
 	}
 	return -1;
 }
 
 int index_of_char(char *a, char b, unsigned int entry) {
 	size_t count = 0;
-	for (size_t i = 0; i < strlen(a); i++) {
+	for (size_t i = 0; i < strlen(a); ++i) {
 		if (a[i] == b) {
 			++count;
 			if (count == entry)
@@ -324,9 +338,9 @@ int index_of_char(char *a, char b, unsigned int entry) {
 char *strip(char *str, char a) {
 	size_t start = 0, end = strlen(str);
 	while (str[start] == a && start < strlen(str))
-		start++;
+		++start;
 	while (str[end - 1] == a && end > 0)
-		end--;
+		--end;
 	if (start == end) return NULL;
 	return slice_fromto(str, start, end);
 }
@@ -335,11 +349,12 @@ char *strip(char *str, char a) {
 StringArray split(char*str, char*b) {
 	StringArray res =  new_strarray();
 	unsigned long count_b = count_substr(str, b),
-		blen = strlen(b),
-		lenstr = strlen(str),
-		*indexes = malloc(count_b * sizeof(unsigned long));
+					 blen = strlen(b),
+				   lenstr = strlen(str),
+				 *indexes = malloc(count_b * sizeof(unsigned long));
+	
 	if (count_b > 0) {
-		for (int i = 0; i < count_b; i++) {
+		for (unsigned long i = 0; i < count_b; ++i) {
 			if (i == 0)
 				indexes[i] = index_of(str, b, 1);
 			else {
@@ -348,12 +363,14 @@ StringArray split(char*str, char*b) {
 				free(s0);
 			}
 		}
+		
 		if (indexes[0] != 0) {
 			char *s1 = slice_to(str, indexes[0]);
 			sa_add(&res, s1);
 			free(s1);
 		}
-		for (int i = 0; i < count_b - 1; i++) {
+		
+		for (unsigned long i = 0; i < count_b - 1; ++i) {
 			if (indexes[i] + blen == indexes[i + 1])
 				continue;
 
@@ -361,14 +378,15 @@ StringArray split(char*str, char*b) {
 			sa_add(&res, s2);
 			free(s2);
 		}
+		
 		if (indexes[count_b - 1] + blen < lenstr) {
 			char *s3 = slice_from(str, indexes[count_b - 1] + blen);
 			sa_add(&res, s3);
 			free(s3);
 		}
-	} else {
+	} else
 		sa_add(&res, str);
-	}
+
 	free(indexes);
 	return res;
 }
@@ -378,81 +396,111 @@ char *replace(char *str, char *b, char *c) {
 		blen = strlen(b),
 		lenstr = strlen(str),
 		*indexes = malloc(count_b * sizeof(unsigned long));
+		
 	string(result);
-	if (count_b == 0) {
+	
+	if (!count_b) {
 		result = malloc((lenstr + 1) * sizeof(char));
 		strcpy(result, str);
 		strcat(result, "\0");
 	} else {
-		for (int i = 0; i < count_b; i++) {
+		for (unsigned long i = 0; i < count_b; i++) {
 			if (i == 0)
 				indexes[i] = index_of(str, b, 1);
-			else
-				indexes[i] = index_of(slice_from(str, indexes[i - 1] + blen), b, 1) + indexes[i - 1] + blen;
+			else {
+				char *s1 = slice_from(str, indexes[i - 1] + blen);
+				indexes[i] = index_of(s1, b, 1) + indexes[i - 1] + blen;
+				free(s1);
+			}
 		}
+		
 		if (indexes[0] != 0)
 			add_str(&result, slice_to(str, indexes[0]));
-		for (int i = 0; i < count_b - 1; i++) {
+		
+		for (unsigned long i = 0; i < count_b - 1; ++i) {
 			add_str(&result, c);
-			if (indexes[i] + blen == indexes[i + 1]) continue;
-			add_str(&result, slice_fromto(str, indexes[i] + blen, indexes[i + 1]));
+			
+			if (indexes[i] + blen == indexes[i + 1])
+				continue;
+			
+			char *s2 = slice_fromto(str, indexes[i] + blen, indexes[i + 1]);
+			add_str(&result, s2);
+			free(s2);
 		}
+		
 		add_str(&result, c);
-		if (indexes[count_b - 1] + blen < lenstr)
-			add_str(&result, slice_from(str, indexes[count_b - 1] + blen));
+		
+		if (indexes[count_b - 1] + blen < lenstr) {
+			char *s3 = slice_from(str, indexes[count_b - 1] + blen);
+			add_str(&result, s3);
+			free(s3);
+		}
+		
 		free(indexes);
 	}
 	return result;
 }
 
+// TODO: fix memory leaks in split_sa
 StringArray split_sa(char *a, StringArray sa) {
 	StringArray res = new_strarray();
+	
 	if (sa.length == 1)
 		sa_add_sa(&res, split(a, sa_get(sa, 0)));
-	else if (sa.length == 0)
+	else if (!sa.length)
 		sa_add(&res, a);
 	else {
 		string(res_str);
 		set_str(&res_str, a);
-		for (int i = 1; i < sa.length; i++)
+		
+		for (unsigned long i = 1; i < sa.length; ++i)
 			set_str(&res_str, replace(res_str, sa_get(sa, i), sa_get(sa, 0)));
+		
 		sa_add_sa(&res, split(res_str, sa_get(sa, 0)));
 	}
 	return res;
 }
 
+// TODO: fix memory leaks in minus_str
 char *minus_str(char *a, char *b) {
 	string(res);
 	StringArray splitted = split(a, b);
-	for (unsigned int i=0; i<splitted.length; i++)
+
+	for (unsigned long i = 0; i<splitted.length; ++i)
 		add_str(&res, sa_get(splitted, i));
+
 	return res;
 }
 
 char *mult_str(char *str, unsigned int c) {
 	string(result);
-	for (unsigned int i = 0; i < c; i++)
+
+	for (unsigned int i = 0; i < c; ++i)
 		add_str(&result, str);
+
 	return result;
 }
 
 // Functions for working with files
-char *read_to(FILE *file, int to) {
+char *read_to(FILE *file, char to) {
 	string(res);
-	int len = 0, ch;
+	int len = 0;
+	char ch;
+	
 	if (file == NULL)
 		return NULL;
+		
 	while (1) {
 		ch = getc(file);
 		if (ch == to) {
-			len++;
+			++len;
 			res = realloc(res, len * sizeof(char));
 			res[len - 1] = '\0';
 			break;
 		}
-		len++;
+		++len;
 		res = realloc(res, len * sizeof(char));
-		res[len - 1] = (char)ch;
+		res[len - 1] = ch;
 	}
 	return res;
 }
@@ -462,5 +510,5 @@ char *read_file(FILE *file) {
 }
 
 char *read_line(FILE *file) {
-	return read_to(file, (int)'\n');
+	return read_to(file, '\n');
 }
